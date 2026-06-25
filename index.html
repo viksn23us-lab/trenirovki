@@ -1,0 +1,405 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#111111">
+<title>Тренировки</title>
+<style>
+:root{
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;
+  color-scheme:light;
+}
+body{
+  margin:0;
+  background:#f4f4f6;
+  color:#111;
+}
+header{
+  position:sticky;
+  top:0;
+  z-index:10;
+  background:rgba(255,255,255,.96);
+  border-bottom:1px solid #ddd;
+  padding:calc(12px + env(safe-area-inset-top)) 14px 12px;
+  backdrop-filter:blur(12px);
+}
+h1{
+  font-size:24px;
+  margin:0 0 10px;
+}
+.wrap{
+  max-width:760px;
+  margin:0 auto;
+  padding:12px 12px 60px;
+}
+.card{
+  background:#fff;
+  border-radius:18px;
+  padding:14px;
+  margin:12px 0;
+  box-shadow:0 1px 6px rgba(0,0,0,.08);
+}
+.programs{
+  display:flex;
+  gap:8px;
+  overflow-x:auto;
+  padding-bottom:2px;
+}
+button{
+  font:inherit;
+  border:0;
+  border-radius:12px;
+  padding:11px 13px;
+  background:#111;
+  color:#fff;
+  font-weight:700;
+  white-space:nowrap;
+}
+button.gray{
+  background:#e9e9ed;
+  color:#111;
+}
+button.red{
+  background:#b00020;
+  color:#fff;
+}
+button.small{
+  padding:8px 10px;
+  font-size:14px;
+}
+button.full{
+  width:100%;
+  margin-top:8px;
+}
+input,textarea{
+  font:inherit;
+  box-sizing:border-box;
+  width:100%;
+  border:1px solid #c9c9ce;
+  border-radius:12px;
+  padding:11px;
+  background:#fff;
+}
+textarea{
+  min-height:120px;
+}
+.exercise{
+  border-top:1px solid #eee;
+  padding-top:14px;
+  margin-top:14px;
+}
+.exercise:first-child{
+  border-top:0;
+  padding-top:0;
+  margin-top:0;
+}
+.name{
+  font-size:19px;
+  font-weight:800;
+  margin-bottom:5px;
+}
+.last{
+  color:#555;
+  font-size:15px;
+  margin-bottom:8px;
+}
+.result-row{
+  display:grid;
+  grid-template-columns:1fr auto;
+  gap:8px;
+  align-items:center;
+}
+.muted{
+  color:#666;
+  font-size:14px;
+  line-height:1.35;
+}
+.history{
+  white-space:pre-wrap;
+  background:#f3f3f6;
+  border-radius:12px;
+  padding:10px;
+  font-size:14px;
+  max-height:280px;
+  overflow:auto;
+}
+.hidden{
+  display:none;
+}
+.line{
+  height:1px;
+  background:#eee;
+  margin:14px 0;
+}
+</style>
+</head>
+<body>
+<header>
+  <h1>Тренировки</h1>
+  <div id="programButtons" class="programs"></div>
+</header>
+
+<div class="wrap">
+
+  <div class="card">
+    <div class="muted" id="dateLine"></div>
+    <div id="workout"></div>
+  </div>
+
+  <div class="card">
+    <button class="gray full" onclick="toggleSettings()">Настроить программы и упражнения</button>
+    <div id="settings" class="hidden">
+      <div class="line"></div>
+      <div class="muted">Одна строка — одно упражнение. Порядок строк — порядок прохождения тренировки. Чтобы изменить порядок, просто переставь строки.</div>
+      <p><b>Название программы</b></p>
+      <input id="programName" placeholder="Например: Пампинг">
+      <p><b>Упражнения</b></p>
+      <textarea id="exerciseList" placeholder="Жим гантелей сидя&#10;Махи в стороны&#10;Тяга верхнего блока"></textarea>
+      <button class="full" onclick="saveProgram()">Сохранить программу</button>
+      <button class="gray full" onclick="newProgram()">Новая программа</button>
+      <button class="red full" onclick="deleteProgram()">Удалить текущую программу</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <b>История</b>
+    <div id="history" class="history" style="margin-top:10px;">Пока нет записей.</div>
+    <button class="gray full" onclick="copyHistory()">Скопировать историю</button>
+  </div>
+
+</div>
+
+<script>
+const KEY = "simple_gym_logger_v1";
+
+function makeDefaultData(){
+  return {
+    currentProgram: "Пампинг",
+    programs: {
+      "Пампинг": [
+        "Жим гантелей сидя",
+        "Махи в стороны",
+        "Тяга верхнего блока",
+        "Сгибание рук со штангой",
+        "Молотки"
+      ],
+      "Силовая": [
+        "Жим ногами",
+        "Румынская тяга",
+        "Тяга горизонтального блока",
+        "Жим в тренажёре",
+        "Пресс"
+      ]
+    },
+    last: {},
+    log: []
+  };
+}
+
+let data = loadData();
+
+function loadData(){
+  try{
+    const raw = localStorage.getItem(KEY);
+    if(!raw) return makeDefaultData();
+    const parsed = JSON.parse(raw);
+    if(!parsed.programs || typeof parsed.programs !== "object") return makeDefaultData();
+    if(!parsed.currentProgram) parsed.currentProgram = Object.keys(parsed.programs)[0] || "Пампинг";
+    if(!parsed.last) parsed.last = {};
+    if(!Array.isArray(parsed.log)) parsed.log = [];
+    return parsed;
+  }catch(e){
+    return makeDefaultData();
+  }
+}
+
+function saveData(){
+  localStorage.setItem(KEY, JSON.stringify(data));
+}
+
+function safe(text){
+  return String(text).replace(/[&<>"']/g, function(m){
+    return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m];
+  });
+}
+
+function nowDate(){
+  return new Date().toLocaleDateString("ru-RU", {
+    weekday:"short", day:"2-digit", month:"2-digit", year:"numeric"
+  });
+}
+
+function nowFull(){
+  return new Date().toLocaleString("ru-RU", {
+    day:"2-digit", month:"2-digit", year:"numeric",
+    hour:"2-digit", minute:"2-digit"
+  });
+}
+
+function renderPrograms(){
+  const box = document.getElementById("programButtons");
+  box.innerHTML = "";
+  Object.keys(data.programs).forEach(function(name){
+    const btn = document.createElement("button");
+    btn.textContent = name;
+    btn.className = name === data.currentProgram ? "" : "gray";
+    btn.onclick = function(){
+      data.currentProgram = name;
+      saveData();
+      renderAll();
+    };
+    box.appendChild(btn);
+  });
+}
+
+function renderWorkout(){
+  document.getElementById("dateLine").textContent = nowDate();
+  const box = document.getElementById("workout");
+  const program = data.currentProgram;
+  const exercises = data.programs[program] || [];
+  if(!exercises.length){
+    box.innerHTML = "<p><b>В программе нет упражнений.</b></p><p class='muted'>Добавь упражнения в настройках.</p>";
+    return;
+  }
+  let html = "";
+  exercises.forEach(function(ex, index){
+    const key = program + "::" + ex;
+    const last = data.last[key] || "пока нет";
+    html += `
+      <div class="exercise">
+        <div class="name">${safe(ex)}</div>
+        <div class="last">Прошлый раз: <b>${safe(last)}</b></div>
+        <div class="result-row">
+          <input id="result_${index}" inputmode="decimal" autocomplete="off" placeholder="сегодня: 22,5×10×3">
+          <button onclick="saveResult(${index})">OK</button>
+        </div>
+      </div>
+    `;
+  });
+  box.innerHTML = html;
+}
+
+function saveResult(index){
+  const program = data.currentProgram;
+  const exercise = (data.programs[program] || [])[index];
+  if(!exercise) return;
+  const input = document.getElementById("result_" + index);
+  const result = (input && input.value ? input.value : "").trim();
+  if(!result) return;
+  const key = program + "::" + exercise;
+  data.last[key] = result;
+  data.log.unshift({
+    date: nowFull(),
+    program: program,
+    exercise: exercise,
+    result: result
+  });
+  saveData();
+  renderAll();
+}
+
+function renderSettings(){
+  const program = data.currentProgram || Object.keys(data.programs)[0] || "";
+  document.getElementById("programName").value = program;
+  document.getElementById("exerciseList").value = (data.programs[program] || []).join("\n");
+}
+
+function toggleSettings(){
+  const el = document.getElementById("settings");
+  el.classList.toggle("hidden");
+  renderSettings();
+}
+
+function saveProgram(){
+  const oldName = data.currentProgram;
+  const newName = document.getElementById("programName").value.trim();
+  const exercises = document.getElementById("exerciseList").value
+    .split("\n")
+    .map(function(x){ return x.trim(); })
+    .filter(Boolean);
+  if(!newName || exercises.length === 0){
+    alert("Нужно указать название программы и хотя бы одно упражнение.");
+    return;
+  }
+  if(oldName && oldName !== newName){
+    delete data.programs[oldName];
+  }
+  data.programs[newName] = exercises;
+  data.currentProgram = newName;
+  saveData();
+  renderAll();
+  alert("Сохранено");
+}
+
+function newProgram(){
+  const name = "Новая программа";
+  let finalName = name;
+  let n = 2;
+  while(data.programs[finalName]){
+    finalName = name + " " + n;
+    n++;
+  }
+  data.programs[finalName] = ["Новое упражнение"];
+  data.currentProgram = finalName;
+  saveData();
+  renderAll();
+  document.getElementById("settings").classList.remove("hidden");
+  renderSettings();
+}
+
+function deleteProgram(){
+  const name = data.currentProgram;
+  if(!name) return;
+  if(!confirm("Удалить программу «" + name + "»? История сохранится.")) return;
+  delete data.programs[name];
+  const names = Object.keys(data.programs);
+  if(names.length === 0){
+    data = makeDefaultData();
+  }else{
+    data.currentProgram = names[0];
+  }
+  saveData();
+  renderAll();
+}
+
+function renderHistory(){
+  const box = document.getElementById("history");
+  if(!data.log.length){
+    box.textContent = "Пока нет записей.";
+    return;
+  }
+  box.textContent = data.log
+    .slice(0, 150)
+    .map(function(x){
+      return x.date + " | " + x.program + " | " + x.exercise + ": " + x.result;
+    })
+    .join("\n");
+}
+
+function copyHistory(){
+  const text = data.log
+    .map(function(x){
+      return x.date + "\t" + x.program + "\t" + x.exercise + "\t" + x.result;
+    })
+    .join("\n");
+  if(navigator.clipboard){
+    navigator.clipboard.writeText(text || "История пуста").then(function(){
+      alert("История скопирована");
+    });
+  }else{
+    alert("Копирование не поддерживается этим браузером.");
+  }
+}
+
+function renderAll(){
+  renderPrograms();
+  renderWorkout();
+  renderSettings();
+  renderHistory();
+}
+
+renderAll();
+</script>
+</body>
+</html>
