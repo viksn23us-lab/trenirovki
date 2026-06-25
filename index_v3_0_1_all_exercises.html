@@ -1,0 +1,658 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#F5F8F6">
+<title>Тренировки 3.0.1</title>
+<style>
+:root{
+  --bg:#F5F8F6;
+  --card:#FFFFFF;
+  --ink:#14201C;
+  --muted:#64736E;
+  --line:#DDE7E3;
+  --green:#2F8F5B;
+  --green-dark:#237047;
+  --green-soft:#E8F8EE;
+  --blue-soft:#EEF6FF;
+  --gray-soft:#EEF2F1;
+  --danger:#B3261E;
+  --shadow:0 8px 26px rgba(26,54,44,.08);
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+body{
+  margin:0;
+  color:var(--ink);
+  background:
+    radial-gradient(circle at 0 0, #EAF7FF 0, transparent 30%),
+    radial-gradient(circle at 100% 0, #E8F8EE 0, transparent 34%),
+    var(--bg);
+}
+button,input,select,textarea{font:inherit}
+button{
+  border:0;
+  border-radius:14px;
+  padding:11px 13px;
+  background:linear-gradient(135deg,var(--green),#38A96B);
+  color:white;
+  font-weight:850;
+  box-shadow:0 4px 14px rgba(47,143,91,.18);
+}
+button.secondary{background:var(--gray-soft);color:var(--ink);box-shadow:none}
+button.danger{background:var(--danger);color:white;box-shadow:none}
+input,select,textarea{
+  width:100%;
+  border:1px solid #CAD8D2;
+  background:#fff;
+  color:var(--ink);
+  border-radius:13px;
+  padding:11px;
+  outline:none;
+}
+textarea{min-height:150px}
+label{display:block;color:var(--muted);font-size:13px;margin:10px 0 6px 3px;font-weight:650}
+.app{
+  max-width:860px;
+  margin:0 auto;
+  padding:calc(12px + env(safe-area-inset-top)) 12px calc(88px + env(safe-area-inset-bottom));
+}
+.top{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+  margin:4px 0 12px;
+}
+h1{margin:0;font-size:28px;letter-spacing:-.03em}
+.user-mini{color:var(--muted);font-size:14px;margin-top:3px}
+.program-row{
+  display:flex;
+  gap:8px;
+  align-items:center;
+  margin:10px 0 0;
+}
+.program-pill{
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  background:var(--green-soft);
+  border:1px solid #CBE8D8;
+  color:var(--green-dark);
+  border-radius:999px;
+  padding:8px 12px;
+  font-size:20px;
+  font-weight:900;
+}
+.program-pill select{
+  appearance:none;
+  border:0;
+  background:transparent;
+  padding:0;
+  color:var(--green-dark);
+  font-size:20px;
+  font-weight:900;
+}
+.icon-btn{
+  width:52px;height:52px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  background:rgba(255,255,255,.88);
+  border:1px solid var(--line);
+  color:var(--ink);
+  box-shadow:0 5px 18px rgba(26,54,44,.06);
+  font-size:24px;
+}
+.card{
+  background:rgba(255,255,255,.94);
+  border:1px solid rgba(221,231,227,.95);
+  border-radius:24px;
+  padding:15px;
+  box-shadow:var(--shadow);
+  margin:12px 0;
+}
+.progress-head{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  color:var(--muted);
+  font-size:15px;
+  font-weight:700;
+  margin-bottom:10px;
+}
+.progress-head b{color:var(--green-dark)}
+.bar{display:grid;grid-template-columns:repeat(var(--n,1),1fr);gap:5px}
+.seg{height:12px;border-radius:999px;background:#E3E8E6}
+.seg.done{background:linear-gradient(135deg,var(--green),#38A96B)}
+.exercise-list{
+  display:grid;
+  gap:10px;
+}
+.exercise{
+  background:linear-gradient(135deg,#fff,#FAFCFB);
+  border:1px solid var(--line);
+  border-radius:20px;
+  padding:13px;
+}
+.exercise.done{
+  background:linear-gradient(135deg,var(--green-soft),#F8FFFB);
+  border-color:#CFEBDD;
+}
+.ex-head{
+  display:flex;
+  justify-content:space-between;
+  gap:10px;
+  align-items:flex-start;
+  margin-bottom:8px;
+}
+.ex-name{
+  font-size:20px;
+  font-weight:950;
+  letter-spacing:-.02em;
+  line-height:1.1;
+}
+.ex-status{
+  min-width:30px;height:30px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  background:var(--gray-soft);
+  color:#74817C;
+  font-weight:900;
+}
+.exercise.done .ex-status{
+  background:var(--green);
+  color:white;
+}
+.last{
+  color:var(--muted);
+  font-size:14px;
+  margin-bottom:10px;
+}
+.last b{color:var(--green-dark)}
+.inputs{
+  display:grid;
+  grid-template-columns:1fr 1fr 1fr auto;
+  gap:7px;
+  align-items:end;
+}
+.field label{
+  font-size:11px;
+  margin:0 0 4px 2px;
+}
+.field input{
+  text-align:center;
+  font-size:21px;
+  font-weight:900;
+  padding:11px 5px;
+}
+.ok-btn{
+  min-width:58px;
+  height:48px;
+  border-radius:14px;
+  padding:0 13px;
+}
+.ok-btn.saved{
+  background:var(--green-dark);
+}
+.screen{display:none}
+.screen.active{display:block}
+.bottom{
+  position:fixed;
+  left:0;right:0;bottom:0;
+  z-index:20;
+  padding:8px 12px calc(8px + env(safe-area-inset-bottom));
+  background:rgba(255,255,255,.93);
+  border-top:1px solid var(--line);
+  backdrop-filter:blur(16px);
+}
+.bottom-inner{
+  max-width:860px;margin:0 auto;
+  display:grid;grid-template-columns:repeat(4,1fr);gap:6px;
+}
+.tab{
+  background:transparent;
+  color:#7A8581;
+  box-shadow:none;
+  padding:8px 4px;
+  border-radius:16px;
+  font-size:12px;
+}
+.tab .ico{display:block;font-size:22px;margin-bottom:3px}
+.tab.active{color:var(--green-dark);background:var(--green-soft)}
+.history-entry{
+  background:linear-gradient(135deg,#fff,#F8FCFA);
+  border:1px solid var(--line);
+  border-radius:18px;
+  padding:13px;
+  margin:9px 0;
+}
+.history-date{color:var(--muted);font-size:14px}
+.history-title{font-weight:900;font-size:18px;margin:4px 0}
+.history-result{color:var(--green-dark);font-weight:900;font-size:21px}
+.list-item{
+  display:grid;
+  grid-template-columns:1fr auto;
+  gap:10px;
+  align-items:center;
+  padding:13px 0;
+  border-bottom:1px solid var(--line);
+}
+.list-item:last-child{border-bottom:0}
+.item-title{font-weight:850;font-size:18px}
+.item-sub{color:var(--muted);font-size:14px;margin-top:3px}
+.small{font-size:14px;color:var(--muted);line-height:1.4}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.hidden{display:none!important}
+@media(max-width:480px){
+  .app{padding-left:10px;padding-right:10px}
+  h1{font-size:27px}
+  .card{padding:13px;border-radius:22px}
+  .exercise{padding:12px}
+  .ex-name{font-size:19px}
+  .inputs{grid-template-columns:1fr 1fr 1fr auto;gap:6px}
+  .field input{font-size:20px;padding:10px 4px}
+  .ok-btn{min-width:54px;height:46px}
+  .grid2{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <section id="screenWorkout" class="screen active">
+    <div class="top">
+      <div>
+        <h1>Тренировки</h1>
+        <div class="user-mini" id="profileNameTop">Виктор</div>
+      </div>
+      <button class="icon-btn" onclick="showScreen('manage')">⚙️</button>
+    </div>
+
+    <div class="program-row">
+      <div class="program-pill">
+        <select id="programSelect" onchange="selectProgram(this.value)"></select>
+        <span>⌄</span>
+      </div>
+      <button class="secondary" onclick="startNewWorkout()">Новый день</button>
+    </div>
+
+    <div class="card">
+      <div class="progress-head">
+        <span>Сегодня</span>
+        <span><b id="doneCount">0</b> из <span id="totalCount">0</span> упражнений</span>
+      </div>
+      <div class="bar" id="progressBar"></div>
+    </div>
+
+    <div class="card">
+      <div id="exerciseList" class="exercise-list"></div>
+    </div>
+  </section>
+
+  <section id="screenHistory" class="screen">
+    <div class="top">
+      <h1>История</h1>
+      <button class="icon-btn" onclick="showScreen('workout')">🏋️</button>
+    </div>
+    <div class="card">
+      <label>Фильтр по упражнению</label>
+      <select id="historyExerciseSelect" onchange="renderHistory()"></select>
+      <div id="historyList"></div>
+    </div>
+  </section>
+
+  <section id="screenPrograms" class="screen">
+    <div class="top">
+      <h1>Программы</h1>
+      <button class="icon-btn" onclick="newProgram()">＋</button>
+    </div>
+    <div class="card">
+      <div id="programList"></div>
+    </div>
+    <div class="card">
+      <h2 id="programEditTitle">Редактирование</h2>
+      <label>Название программы</label>
+      <input id="editProgramName">
+      <label>Упражнения, каждое с новой строки</label>
+      <textarea id="editProgramExercises"></textarea>
+      <p class="small">Порядок строк — порядок показа на главном экране.</p>
+      <button style="width:100%" onclick="saveProgramEditor()">Сохранить программу</button>
+      <button class="danger" style="width:100%;margin-top:10px" onclick="deleteCurrentProgram()">Удалить программу</button>
+    </div>
+  </section>
+
+  <section id="screenManage" class="screen">
+    <div class="top">
+      <h1>Управление</h1>
+      <button class="icon-btn" onclick="showScreen('workout')">🏋️</button>
+    </div>
+    <div class="card">
+      <h2>Профиль</h2>
+      <label>Имя</label>
+      <input id="profileNameInput" placeholder="Ваше имя">
+      <button style="width:100%" onclick="saveProfileName()">Сохранить имя</button>
+    </div>
+    <div class="card">
+      <h2>Экспорт / импорт</h2>
+      <p class="small">Экспорт скачивает резервную копию всех данных. Импорт восстанавливает данные из JSON-файла.</p>
+      <div class="grid2">
+        <button onclick="exportData()">Экспорт JSON</button>
+        <button class="secondary" onclick="document.getElementById('importFile').click()">Импорт JSON</button>
+      </div>
+      <input id="importFile" type="file" accept="application/json,.json" class="hidden" onchange="importData(event)">
+    </div>
+    <div class="card">
+      <h2>О приложении</h2>
+      <p class="small"><b>Тренировки 3.0.1</b><br>Все упражнения на одной странице. Данные хранятся только на устройстве в браузере.</p>
+      <button class="danger" style="width:100%" onclick="resetAll()">Сбросить все данные</button>
+    </div>
+  </section>
+</div>
+
+<nav class="bottom">
+  <div class="bottom-inner">
+    <button class="tab active" id="tabWorkout" onclick="showScreen('workout')"><span class="ico">🏋️</span>Тренировка</button>
+    <button class="tab" id="tabHistory" onclick="showScreen('history')"><span class="ico">🕘</span>История</button>
+    <button class="tab" id="tabPrograms" onclick="showScreen('programs')"><span class="ico">📋</span>Программы</button>
+    <button class="tab" id="tabManage" onclick="showScreen('manage')"><span class="ico">⚙️</span>Управление</button>
+  </div>
+</nav>
+
+<script>
+const APP_VERSION = "3.0.1";
+const STORAGE_KEY = "gym_log_version_3_data";
+
+function uid(prefix){
+  return prefix + "_" + Math.random().toString(36).slice(2,10) + Date.now().toString(36).slice(-4);
+}
+function todayKey(){
+  const d = new Date();
+  return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");
+}
+function formatDate(dateKey){
+  const p = String(dateKey).split("-");
+  return p.length===3 ? p[2]+"."+p[1]+"."+p[0] : dateKey;
+}
+function normNum(v){return String(v||"").trim().replace(",", ".")}
+function displayNum(v){return v===null||v===undefined||v==="" ? "" : String(v).replace(".", ",")}
+function resultText(e){
+  if(!e) return "пока нет";
+  return displayNum(e.weight)+" × "+displayNum(e.reps)+" × "+displayNum(e.sets);
+}
+function safe(s){
+  return String(s).replace(/[&<>"']/g, m => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]));
+}
+function defaultData(){
+  const names1=["Жим гантелей сидя","Махи в стороны","Тяга верхнего блока","Сгибание рук со штангой","Молотки"];
+  const names2=["Жим ногами","Румынская тяга","Тяга горизонтального блока","Жим в тренажёре","Пресс"];
+  const catalog={}, ids1=[], ids2=[];
+  names1.forEach(n=>{const id=uid("ex"); catalog[id]={id,name:n}; ids1.push(id)});
+  names2.forEach(n=>{const id=uid("ex"); catalog[id]={id,name:n}; ids2.push(id)});
+  const p1=uid("pr"), p2=uid("pr");
+  return {
+    appVersion:APP_VERSION,
+    profileName:"Виктор",
+    currentProgramId:p1,
+    editProgramId:p1,
+    catalog,
+    programs:{
+      [p1]:{id:p1,name:"Пампинг",exerciseIds:ids1},
+      [p2]:{id:p2,name:"Силовая",exerciseIds:ids2}
+    },
+    workouts:[]
+  };
+}
+function migrate(parsed){
+  if(!parsed.catalog || !parsed.programs || !Array.isArray(parsed.workouts)) return defaultData();
+  if(!parsed.currentProgramId || !parsed.programs[parsed.currentProgramId]) parsed.currentProgramId = Object.keys(parsed.programs)[0] || "";
+  if(!parsed.editProgramId || !parsed.programs[parsed.editProgramId]) parsed.editProgramId = parsed.currentProgramId;
+  parsed.appVersion = APP_VERSION;
+  return parsed;
+}
+function loadData(){
+  try{
+    const raw=localStorage.getItem(STORAGE_KEY);
+    return raw ? migrate(JSON.parse(raw)) : defaultData();
+  }catch(e){return defaultData()}
+}
+let data=loadData();
+function saveData(){data.appVersion=APP_VERSION;localStorage.setItem(STORAGE_KEY,JSON.stringify(data))}
+function currentProgram(){return data.programs[data.currentProgramId] || Object.values(data.programs)[0] || null}
+function currentWorkout(){
+  const p=currentProgram();
+  if(!p) return null;
+  const date=todayKey();
+  let w=data.workouts.find(x=>x.date===date && x.programId===p.id);
+  if(!w){
+    w={id:uid("wo"),date,programId:p.id,programName:p.name,createdAt:Date.now(),updatedAt:Date.now(),entries:{}};
+    data.workouts.unshift(w);
+    saveData();
+  }
+  return w;
+}
+function getEntry(workout,id){return workout && workout.entries ? workout.entries[id] : null}
+function lastEntry(exerciseId){
+  const today=currentWorkout();
+  const todayId=today ? today.id : "";
+  for(const w of data.workouts){
+    if(w.id===todayId) continue;
+    if(w.entries && w.entries[exerciseId]) return w.entries[exerciseId];
+  }
+  return null;
+}
+function showScreen(name){
+  ["Workout","History","Programs","Manage"].forEach(s=>{
+    document.getElementById("screen"+s).classList.toggle("active",s.toLowerCase()===name);
+    document.getElementById("tab"+s).classList.toggle("active",s.toLowerCase()===name);
+  });
+  if(name==="workout") renderWorkout();
+  if(name==="history") renderHistory();
+  if(name==="programs") renderProgramsScreen();
+  if(name==="manage") renderManage();
+}
+function renderTop(){
+  document.getElementById("profileNameTop").textContent=data.profileName||"Профиль";
+  const sel=document.getElementById("programSelect");
+  sel.innerHTML="";
+  Object.values(data.programs).forEach(p=>{
+    const o=document.createElement("option");
+    o.value=p.id;o.textContent=p.name;
+    if(p.id===data.currentProgramId) o.selected=true;
+    sel.appendChild(o);
+  });
+}
+function selectProgram(id){
+  if(!data.programs[id]) return;
+  data.currentProgramId=id;
+  data.editProgramId=id;
+  saveData();
+  renderWorkout();
+}
+function renderWorkout(){
+  renderTop();
+  const p=currentProgram();
+  const box=document.getElementById("exerciseList");
+  if(!p){box.innerHTML="<p>Нет программ.</p>";return}
+  const workout=currentWorkout();
+  const ids=p.exerciseIds||[];
+  const done=ids.filter(id=>getEntry(workout,id)).length;
+  document.getElementById("doneCount").textContent=done;
+  document.getElementById("totalCount").textContent=ids.length;
+  const bar=document.getElementById("progressBar");
+  bar.style.setProperty("--n",Math.max(ids.length,1));
+  bar.innerHTML=ids.map(id=>`<div class="seg ${getEntry(workout,id)?"done":""}"></div>`).join("");
+  if(!ids.length){box.innerHTML='<p class="small">В программе нет упражнений. Добавь их во вкладке «Программы».</p>';return}
+  box.innerHTML=ids.map((id,i)=>{
+    const ex=data.catalog[id]||{name:"Упражнение"};
+    const today=getEntry(workout,id);
+    const prev=lastEntry(id);
+    const shown=today||prev;
+    return `<div class="exercise ${today?"done":""}" id="exercise_${i}">
+      <div class="ex-head">
+        <div>
+          <div class="ex-name">${safe(ex.name)}</div>
+          <div class="last">${today?"Сегодня записано":"Прошлый раз"}: <b>${safe(resultText(shown))}</b></div>
+        </div>
+        <div class="ex-status">${today?"✓":i+1}</div>
+      </div>
+      <div class="inputs">
+        <div class="field">
+          <label>Вес</label>
+          <input id="w_${i}" inputmode="decimal" value="${shown?displayNum(shown.weight):""}" placeholder="0">
+        </div>
+        <div class="field">
+          <label>Повторы</label>
+          <input id="r_${i}" inputmode="numeric" value="${shown?displayNum(shown.reps):""}" placeholder="0">
+        </div>
+        <div class="field">
+          <label>Подходы</label>
+          <input id="s_${i}" inputmode="numeric" value="${shown?displayNum(shown.sets):""}" placeholder="0">
+        </div>
+        <button class="ok-btn ${today?"saved":""}" onclick="saveExercise(${i})">${today?"✓":"OK"}</button>
+      </div>
+    </div>`;
+  }).join("");
+}
+function saveExercise(i){
+  const p=currentProgram();
+  const id=(p.exerciseIds||[])[i];
+  if(!id) return;
+  const weight=Number(normNum(document.getElementById("w_"+i).value));
+  const reps=Number(normNum(document.getElementById("r_"+i).value));
+  const sets=Number(normNum(document.getElementById("s_"+i).value));
+  if(isNaN(weight)||isNaN(reps)||isNaN(sets)||reps<=0||sets<=0){
+    alert("Заполни вес, повторы и подходы. Повторы и подходы должны быть больше нуля.");
+    return;
+  }
+  const w=currentWorkout();
+  w.entries[id]={exerciseId:id,weight,reps,sets,savedAt:Date.now()};
+  w.updatedAt=Date.now();
+  saveData();
+  renderWorkout();
+  const next=document.getElementById("exercise_"+(i+1));
+  if(next) next.scrollIntoView({behavior:"smooth",block:"center"});
+}
+function startNewWorkout(){
+  const p=currentProgram();
+  if(!p) return;
+  if(!confirm("Очистить сегодняшние записи по программе «"+p.name+"» и начать заново?")) return;
+  const date=todayKey();
+  data.workouts=data.workouts.filter(w=>!(w.date===date && w.programId===p.id));
+  saveData();
+  renderWorkout();
+}
+function allExerciseIds(){
+  const set=new Set();
+  Object.values(data.programs).forEach(p=>(p.exerciseIds||[]).forEach(id=>set.add(id)));
+  data.workouts.forEach(w=>Object.keys(w.entries||{}).forEach(id=>set.add(id)));
+  return Array.from(set);
+}
+function renderHistory(){
+  const sel=document.getElementById("historyExerciseSelect");
+  const old=sel.value||"all";
+  sel.innerHTML='<option value="all">Все упражнения</option>';
+  allExerciseIds().forEach(id=>{
+    const ex=data.catalog[id]; if(!ex) return;
+    const o=document.createElement("option"); o.value=id; o.textContent=ex.name; if(id===old)o.selected=true; sel.appendChild(o);
+  });
+  if(old==="all") sel.value="all";
+  const filter=sel.value;
+  const list=[];
+  for(const w of data.workouts){
+    for(const [id,e] of Object.entries(w.entries||{})){
+      if(filter!=="all" && id!==filter) continue;
+      list.push({date:w.date,programName:w.programName,exName:(data.catalog[id]||{}).name||"Упражнение",entry:e,t:e.savedAt||w.updatedAt||0});
+    }
+  }
+  list.sort((a,b)=>b.t-a.t);
+  document.getElementById("historyList").innerHTML=list.length?list.slice(0,200).map(x=>`
+    <div class="history-entry">
+      <div class="history-date">${safe(formatDate(x.date))} · ${safe(x.programName||"")}</div>
+      <div class="history-title">${safe(x.exName)}</div>
+      <div class="history-result">${safe(resultText(x.entry))}</div>
+    </div>`).join(""):'<p class="small">Пока нет записей.</p>';
+}
+function findOrCreateExercise(name){
+  const clean=String(name||"").trim();
+  if(!clean) return null;
+  const found=Object.values(data.catalog).find(e=>e.name.toLowerCase()===clean.toLowerCase());
+  if(found) return found.id;
+  const id=uid("ex"); data.catalog[id]={id,name:clean}; return id;
+}
+function renderProgramsScreen(){
+  const list=document.getElementById("programList");
+  list.innerHTML=Object.values(data.programs).map(p=>`
+    <div class="list-item" onclick="editProgram('${p.id}')">
+      <div><div class="item-title">${safe(p.name)}</div><div class="item-sub">${(p.exerciseIds||[]).length} упражнений</div></div>
+      <div>${p.id===data.currentProgramId?"✓":"›"}</div>
+    </div>`).join("");
+  const p=data.programs[data.editProgramId]||currentProgram();
+  if(p) fillProgramEditor(p);
+}
+function editProgram(id){if(!data.programs[id])return;data.editProgramId=id;saveData();renderProgramsScreen()}
+function fillProgramEditor(p){
+  document.getElementById("programEditTitle").textContent="Редактирование: "+p.name;
+  document.getElementById("editProgramName").value=p.name;
+  document.getElementById("editProgramExercises").value=(p.exerciseIds||[]).map(id=>(data.catalog[id]||{}).name||"").join("\n");
+}
+function saveProgramEditor(){
+  const p=data.programs[data.editProgramId]||currentProgram();
+  if(!p) return;
+  const name=document.getElementById("editProgramName").value.trim();
+  const lines=document.getElementById("editProgramExercises").value.split("\n").map(x=>x.trim()).filter(Boolean);
+  if(!name||!lines.length){alert("Нужно название и хотя бы одно упражнение.");return}
+  p.name=name; p.exerciseIds=lines.map(findOrCreateExercise).filter(Boolean);
+  saveData(); renderProgramsScreen(); renderWorkout(); alert("Программа сохранена");
+}
+function newProgram(){
+  const id=uid("pr");
+  data.programs[id]={id,name:"Новая программа",exerciseIds:[]};
+  data.currentProgramId=id; data.editProgramId=id;
+  saveData(); showScreen("programs");
+}
+function deleteCurrentProgram(){
+  const p=data.programs[data.editProgramId];
+  if(!p) return;
+  if(Object.keys(data.programs).length<=1){alert("Нельзя удалить последнюю программу.");return}
+  if(!confirm("Удалить программу «"+p.name+"»? История упражнений сохранится.")) return;
+  delete data.programs[p.id];
+  const first=Object.keys(data.programs)[0];
+  data.currentProgramId=first; data.editProgramId=first;
+  saveData(); renderProgramsScreen(); renderWorkout();
+}
+function renderManage(){document.getElementById("profileNameInput").value=data.profileName||""}
+function saveProfileName(){
+  data.profileName=document.getElementById("profileNameInput").value.trim()||"Профиль";
+  saveData(); renderTop(); alert("Имя сохранено");
+}
+function exportData(){
+  const payload={type:"gym-log-v3-backup",version:APP_VERSION,exportedAt:new Date().toISOString(),data};
+  const blob=new Blob([JSON.stringify(payload,null,2)],{type:"application/json"});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement("a");
+  a.href=url; a.download="trenirovki_backup_"+todayKey()+".json";
+  document.body.appendChild(a); a.click();
+  setTimeout(()=>{document.body.removeChild(a);URL.revokeObjectURL(url)},0);
+}
+function importData(event){
+  const file=event.target.files&&event.target.files[0]; if(!file)return;
+  const reader=new FileReader();
+  reader.onload=function(){
+    try{
+      const obj=JSON.parse(reader.result);
+      if(obj.type!=="gym-log-v3-backup"||!obj.data) throw new Error("bad");
+      if(!confirm("Заменить текущие данные данными из файла?")) return;
+      data=migrate(obj.data); saveData(); showScreen("workout"); alert("Данные импортированы");
+    }catch(e){alert("Не удалось импортировать файл.")}
+    event.target.value="";
+  };
+  reader.readAsText(file);
+}
+function resetAll(){
+  if(!confirm("Стереть все данные на этом устройстве?")) return;
+  localStorage.removeItem(STORAGE_KEY); data=defaultData(); saveData(); showScreen("workout");
+}
+saveData();
+renderWorkout();
+</script>
+</body>
+</html>
